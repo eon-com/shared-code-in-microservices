@@ -1,11 +1,11 @@
-# Shared code in microservices: DDD to the rescue
+# Shared Code in Microservices? Domain Driven Design to the Rescue
 
 
 Microservices have been around for a while so they are state-of-the-art rather than just a hype. Countless blog articles, books, best practices, tweets and war stories from concrete projects testify to a living architectural style. There is hardly a question that has not been repeatedly examined from all sides: starting with the basic concept and the technical layout, to topics such as team and communication structure, deployment, service discovery, logging and monitoring, there are enough instructions, frameworks, tools, and literature. Therefore this article is not intended as another comprehensive introduction to microservices.
 
-This blog post is rather about a topic that comes up again and again and that concerns conference pundits as well as developers in the verbal fights in the coffee kitchen: Is it reasonable to reuse code in microservice projects? Is shared code, in whatever form, a brutal violation of the isolation principle? Or does “Don't Repeat Yourself (DRY-principle)" also apply here? After briefly touching upon some core principles of microservices we will discuss the traditional promise of reusability, its flipside, and the meaning of **Bounded Context** in the realm of **Domain-Driven Design (DDD)**. Afterwards we will delve into examples where it is perfectly legitimate to share code in microservices including some edge cases and how to deal with them. Finally we will touch the topic of shared infrastructure as code.
+This blog post is rather about a topic that comes up again and again and that concerns conference pundits as well as developers in the verbal fights in the coffee kitchen: Is it reasonable to reuse code in microservice projects? Is shared code, in whatever form, a brutal violation of the isolation principle? Or does **Don't Repeat Yourself** (DRY-principle) also apply here? After briefly touching upon the principle of loose coupling and isolation we will discuss the traditional promise of reusability, its flipside, and the meaning of **Bounded Context** in the realm of **Domain-Driven Design*** (DDD). Afterwards we will delve into examples where it is perfectly legitimate to share code in microservices including some edge cases and how to deal with them. Finally we will discuss shared **Infrastructure as Code**.
 
-## Loose coupling and isolation
+## Loose Coupling and Isolation
 
 Microservices should not be an end in themselves. One of the core goals in the introduction of microservices is decoupling of components that are designed and implemented under technological autonomy, communicating via interfaces. The purpose is to manage complexity in an effective way, to provide a higher degree of isolation during the application runtime and the to test business ideas and technologies faster (and to throw them away if they prove to be unsuitable).
 
@@ -13,7 +13,7 @@ A microservice typically implements the business process of a specialist domain,
 
 But even in microservice projects, there is often a desire for shared use of database schemas, data sources, code for access to frequently used objects in a domain or existing functionality. There are two forces working in different directions at one point: the “maximum generic reusability” on the one hand, the concept of independence and isolation on the other.
 
-## The promise of salvation of reusability
+## Reusability as the Promise of Salvation?
 
 The strong desire for reusability is not surprising as the DRY-principle has been the mantra of software development for decades. And even today developers are being instilled, redundancy is the worst of all developer villains, after all it would make more sense to "inherit" code instead of writing. What can be reused does not have to be rewritten and thus reduces costs. Reusable code should ideally meet the following requirements:
 
@@ -25,7 +25,7 @@ Developers commonly argue that the disclosure of such code in an open source pro
 
 Answers to this are provided by the concept of **Bounded Context** from **DDD**, an approach to software modeling that focuses very strongly on the business of an application domain.
 
-## Bounded context
+## Bounded Context!
 
 The urge to generalize everything has led to global data models and wrong technical abstraction in many past projects. Instead of promised productivity boosts, this procedure slows down the development process. The reason for this is obvious: A technically incorrect generalization leads to a high coordination effort, since many developers involved have to coordinate with each other. Finally, it has to be decided which code ends up in a shared component and how its quality is ensured. In extreme cases you end up with an entire organization that is dedicated to “cross-sectional tasks” as guardian of the holy grail of reusability which is not customer facing and slows down delivery of software [3].
 
@@ -45,7 +45,7 @@ A rule of thumb:
 
 Code reuse for code within a bounded context, however, is not critical.
 
-## Cross-cutting concerns
+## Cross-cutting Concerns
 
 What about libraries like Apache Commons or Google Guava? Should I avoid using them to stick with true microservices doctrine? Of course not! Shared libraries for technical issues such as logging, monitoring, tracing, string manipulation, collections or abstraction layers for infrastructure access are cross-cutting concerns, as they do not depend on the context of a domain. It is perfectly okay to share libraries that involve non-technical aspects [5].
 
@@ -53,7 +53,7 @@ What about libraries like Apache Commons or Google Guava? Should I avoid using t
 
 However, this answer does not address the problem that such libraries often have the disadvantage of many transitive dependencies. It is only a matter of time before you catch version conflicts and it is not uncommon to end up in the notorious **Dependency Hell**.
 
-One way to avoid the dependency hell problem is to provide very lean libraries for clearly defined tasks with little or no dependency. Such libraries are in stark contrast to general-purpose libraries. As an alternative one can use project templates that provide a basic framework with fundamental functionalities. This template can be expanded in any service. In his book on DDD, Eric Evans even goes so far as to suggest that teams change their own copy of what he calls **Shared Kernel**, and the various changes are brought together again at regular intervals.
+One way to avoid the dependency hell problem is to provide very lean libraries for clearly defined tasks with little or no dependency. Such libraries are in stark contrast to general-purpose libraries.
 
 ### Deployment Dependencies
 
@@ -76,19 +76,19 @@ Backward-compatible changes to the service, on the other hand, do not result in 
 
 Generally speaking, in the case of external dependencies in a microservice, the freedom of choice of the specific version of a library used should always be ensured in order to avoid dependencies of this kind.
 
-## Context Mapping [TODO: re-write section]
+## DDD Context Maps and Shared Kernel
 
-There are use cases in which areas of the domain model have to be shared between different bounded contexts. Instead of multiple implementations with inconsistencies, in such cases it seems natural that the producer/supplier and consumer share common structures. Here, for. B. the domain model of the producer can be used directly in the consumer ( shared kernel ). Interactions and dependencies on other microservices can also be managed with the help of an anti-corruption layer , which provides the consumer with a mapping to their own domain model. Both approaches are part of the context maps described in the DDD and can be used even if the consumer does not need all the attributes of the domain model provided by the producer.
+In DDD every bounded context has its own **Ubiqituous Language** [7]. One of the features of DDD is **Context Maps**, which allows grasping the different relationships and translations between bounded contexts, their models and team-wide languages. To explain all kinds of context maps would go beyond the scope of the discussion, so we limit ourselves to a use case in which areas of the domain model are shared between different teams and hence different bounded contexts: **Shared Kernel**. Sometimes it's valid that two teams share common structures; this applies in particular if they are subject to frequent changes. Instead of multiple implementations with inconsistencies a small part of the data model (intersection of two bounded contexts) can be shared between different teams.
 
-Of course, this procedure contradicts the principles of loose coupling and isolation mentioned above, because the independence between microservices is lost, particularly in the shared kernel variant. This procedure is a trade-off and needs to be weighed up in line with usage. It should not be used as a justification for a universal data model in a complex application landscape. Nevertheless, there are scenarios such as session or authentication logic, where such a procedure is appropriate.
+Of course, this procedure contradicts the principles of loose coupling and isolation mentioned above, because the independence between microservices is lost. This procedure is a trade-off and needs to be weighed up in line with usage. **It should not be used as a justification for a universal data model in a complex application landscape!**. Nevertheless, there are scenarios such as session or authentication logic, where such a procedure is appropriate.
 
-Two things are important here: a healthy communication culture between the teams in question and a shared domain model that is as stable as possible, the changes of which should at least be backwards compatible until all consumers have been brought up to date.
+A shared kernel is often difficult to create and to maintain, because you have to achieve open communication between the teams and permanent agreement on what belongs to the shared model. It requires a healthy communication culture between the teams involved.
 
 ## Shared Infrastructure as Code
 
 For the sake of an healthy and productive team autonomy and to avoid infrastructure monoliths, it is recommended to divide **Infrastructure as Code** artifacts according to macroarchitecture and microarchitecture aspects. All infrastructure definitions that belong directly to a certain domain/bounded context should be part of the respective microservice. Let's give an example to illustrate this: A microservice that installs data and then stores it in a message queue should include the infrastructure definition of the topic of the message queue. The subscriptions of the queue, on the other hand, should be defined in services, which consume data from this topic.
 
-All infrastructure definitions that cannot be clearly assigned to a certain service are aspirants for the macro infrastructure (or macro stack). So this stack contains all cross-cutting aspects and ideally consists exclusively of definitions which rarely change. This typically includes network and security infrastructure [7]. The division into various service stacks (micro-stacks) and macro-stacks can be implemented, for example, using the modularization and inclusion concepts of Terraform and CloudFormation.
+All infrastructure definitions that cannot be clearly assigned to a certain service are aspirants for the macro infrastructure (or macro stack). So this stack contains all cross-cutting aspects and ideally consists exclusively of definitions which rarely change. This typically includes network and security infrastructure [8]. The division into various service stacks (micro-stacks) and macro-stacks can be implemented, for example, using the modularization and inclusion concepts of Terraform and CloudFormationn [9].
 
 ## Summary
 
@@ -111,5 +111,6 @@ Shared code or code reuse in microservices leads to dependencies, which can lead
 [4] In addition, the flexibility achieved when focusing on reusability also leads to an increase in complexity. One also speaks of the use / reuse paradox: http://techdistrict.kirkk.com/2009/10/07/the-usereuse-paradox/.   
 [5] The statement applies not only to microservices projects, but generally wherever you want to modularize sensibly. In addition, changes to the base class will quickly violate the Liskov substitution principle: http://newsight.de/2015/01/07/das-liskov-substitution-principle.  
 [6] We limit ourselves to Java in this scenario, but the statements made here also apply to other languages.  
-[7] Semantic versioning: https://semver.org/ 
-[8] See https://www.infoq.com/news/2018/06/cloud-native-continuous-delivery 
+[7] See https://martinfowler.com/bliki/UbiquitousLanguage.html   
+[8] Semantic versioning: https://semver.org/ 
+[9] See https://www.infoq.com/news/2018/06/cloud-native-continuous-delivery 
